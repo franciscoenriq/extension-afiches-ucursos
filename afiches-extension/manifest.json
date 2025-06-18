@@ -1,0 +1,11 @@
+{
+    "manifest_version": 3,
+    "name": "Afiches uCursos",
+    "version": "1.0",
+    "description": "Muestra afiches clasificados desde backend",
+    "permissions": ["activeTab", "scripting"],
+    "action": {
+      "default_popup": "popup.html"
+    }
+  }
+  
