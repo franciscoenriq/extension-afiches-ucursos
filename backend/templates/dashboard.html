@@ -40,7 +40,9 @@
     <div class="container">
         <h1>Hola, {{ user.username }} 👋</h1>
         <p>Bienvenido al panel de control.</p>
-
+        <form action="{{ url_for('ver_reclamos') }}">
+            <button type="submit">Ver sugerencias de correcciones</button>
+        </form>
     </div>
 </body>
 </html>

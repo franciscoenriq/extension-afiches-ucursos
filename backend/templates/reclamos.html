@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reclamos de Usuarios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Reclamos de Usuarios</h1>
+
+    {% if reclamos %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ID Foto</th>
+                    <th>Descripción</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reclamos %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.foto_id }}</td>
+                    <td>{{ r.descripcion }}</td>
+                    <td>{{ r.nombre_usuario }}</td>
+                    <td>{{ r.fecha.strftime("%Y-%m-%d %H:%M") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay reclamos por mostrar.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}">Volver al Dashboard</a>
+</body>
+</html>

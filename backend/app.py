@@ -1,11 +1,11 @@
 from dotenv import load_dotenv
 load_dotenv()
-from flask import Flask, render_template, redirect, url_for, flash,jsonify
+from flask import Flask, request, render_template, redirect, url_for, flash,jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from config import Config
-from models import db, User
-from forms import LoginForm, RegisterForm
+from models import *
+from forms import *
 from flask_ninja import NinjaAPI
 from flask_cors import CORS
 app = Flask(__name__)
@@ -57,6 +57,29 @@ def dashboard():
 def logout():
     logout_user()
     return redirect(url_for("login"))
+
+@app.route("/reclamos",methods=["POST"])
+def reclamos():
+    if request.method == "POST":
+        data = request.get_json() or request.form
+        foto_id = data.get("foto_id")
+        descripcion = data.get("descripcion")
+        #validamos 
+        if not foto_id or not descripcion:
+            return jsonify({"error":"Faltan campos requeridos"}), 400 
+        nuevo_reclamo = Reclamo(
+            foto_id=foto_id,
+            descripcion=descripcion
+        )
+        db.session.add(nuevo_reclamo)
+        db.session.commit()
+        return jsonify({"mensaje":"Reclamo enviado con exito"}) , 201
+
+@app.route("/admin/reclamos")
+@login_required
+def ver_reclamos():
+    reclamos = Reclamo.query.order_by(Reclamo.fecha.desc()).all()
+    return render_template("reclamos.html", reclamos=reclamos)
 
 if __name__ == "__main__":
     with app.app_context():
