@@ -6,9 +6,11 @@
 
     const urlActual = window.location.href;
 
-    // Verificamos si la URL actual está permitida
-    if (!urlsPermitidas.includes(urlActual)) {
-        return; // No hacer nada si la URL no es una de las permitidas
+    // Verificar si la URL actual empieza con cualquiera de los prefijos permitidos
+    const esUrlPermitida = urlsPermitidas.some(prefix => urlActual.startsWith(prefix));
+
+    if (!esUrlPermitida) {
+        return; // No hacer nada si la URL no cumple con los prefijos permitidos
     }
 
     function crearBotonAfiches() {
@@ -102,7 +104,7 @@
     // TODO: Que se ordene por id
     async function cargarAfiches(lista) {
         try {
-            const res = await fetch("http://localhost:5000/api/afiches");
+            const res = await fetch("https://grupo6.juan.cl/afichesApp/afichesApp-front/api/afiches");
             const afiches = await res.json();
 
             if (!afiches.length) {
@@ -139,7 +141,7 @@
 
                 titulo.addEventListener("click", () => {
                     const url = `https://www.u-cursos.cl/ingenieria/2/afiches/o/${afiche.id}`;
-                    window.open(url, "_blank");
+                    window.open(url, "_self");
                 });
 
 

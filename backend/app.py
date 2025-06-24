@@ -23,7 +23,7 @@ login_manager.login_view = "login"
 
 ninja = NinjaAPI(app)
 
-@app.route("/mostrar_predicciones")
+@app.route("/afichesApp/afichesApp-front/mostrar_predicciones")
 def mostrar_predicciones():
     # URL del servidor externo que tiene /predictions
     url_api = "http://172.17.69.228:9006/Afiches-IA/predict"
@@ -57,11 +57,11 @@ def mostrar_predicciones():
         print("Error al guardar en la base de datos:", ex)
 
     return render_template("predicciones.html", predicciones=data)
-@app.route("/api/afiches", methods=["GET"])
+@app.route("/afichesApp/afichesApp-front/api/afiches", methods=["GET"])
 def create_afiche():
-    afiches = (ImagenClasificada.query
+    afiches = (ImagenPredicha.query
             .filter_by(clasificacion=1)
-            .order_by(ImagenClasificada.id.desc())
+            .order_by(ImagenPredicha.fecha.desc())
             .limit(100)
             .all())
             
@@ -79,7 +79,7 @@ def create_afiche():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/afichesApp/afichesApp-front/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -90,18 +90,18 @@ def login():
         flash("Credenciales incorrectas", "danger")
     return render_template("login.html", form=form)
 
-@app.route("/dashboard")
+@app.route("/afichesApp/afichesApp-front/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html", user=current_user)
 
-@app.route("/logout")
+@app.route("/afichesApp/afichesApp-front/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("login"))
 
-@app.route("/reclamos",methods=["POST"])
+@app.route("/afichesApp/afichesApp-front/reclamos",methods=["POST"])
 def reclamos():
     if request.method == "POST":
         data = request.get_json() or request.form
@@ -118,12 +118,13 @@ def reclamos():
         db.session.commit()
         return jsonify({"mensaje":"Reclamo enviado con exito"}) , 201
 
-@app.route("/admin/reclamos")
+@app.route("/afichesApp/afichesApp-front/admin/reclamos")
 @login_required
 def ver_reclamos():
     reclamos = Reclamo.query.order_by(Reclamo.fecha.desc()).all()
     return render_template("reclamos.html", reclamos=reclamos)
 
+application = app
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
