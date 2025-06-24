@@ -1,0 +1,18 @@
+{
+    "manifest_version": 3,
+    "name": "Afiches uCursos",
+    "version": "1.0",
+    "description": "Muestra los afiches directamente en uCursos",
+    "permissions": ["scripting", "tabs"],
+    "host_permissions": [
+      "https://www.u-cursos.cl/*",
+      "http://localhost:5000/api/afiches"
+    ],
+    "content_scripts": [
+      {
+        "matches": ["https://www.u-cursos.cl/*"],
+        "js": ["content.js"]
+      }
+    ]
+  }
+  

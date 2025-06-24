@@ -26,6 +26,14 @@ afiches = [
     {"id": 107405, "titulo": "Charla de Ciberseguridad"},
     {"id": 108305, "titulo": "Concurso de Startups"},
     {"id": 108069, "titulo": "Semana de la Ingeniería"},
+    {"id": 108413, "titulo": "Feria de Innovación 2025"},
+    {"id": 107405, "titulo": "Charla de Ciberseguridad"},
+    {"id": 108305, "titulo": "Concurso de Startups"},
+    {"id": 108069, "titulo": "Semana de la Ingeniería"},
+    {"id": 108413, "titulo": "Feria de Innovación 2025"},
+    {"id": 107405, "titulo": "Charla de Ciberseguridad"},
+    {"id": 108305, "titulo": "Concurso de Startups"},
+    {"id": 108069, "titulo": "Semana de la Ingeniería"}
 ]
 
 @app.route("/api/afiches", methods=["GET"])
