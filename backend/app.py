@@ -8,6 +8,9 @@ from models import *
 from forms import *
 from flask_ninja import NinjaAPI
 from flask_cors import CORS
+import os
+from werkzeug.utils import secure_filename
+
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para desarrollo (todas las rutas y orígenes)
 app.config.from_object(Config)
@@ -21,7 +24,7 @@ login_manager.login_view = "login"
 ninja = NinjaAPI(app)
 
 # Lista de afiches simulados
-afiches = [
+afiches = [ 
     {"id": 108413, "titulo": "Feria de Innovación 2025"},
     {"id": 107405, "titulo": "Charla de Ciberseguridad"},
     {"id": 108305, "titulo": "Concurso de Startups"},
@@ -34,10 +37,53 @@ afiches = [
     {"id": 107405, "titulo": "Charla de Ciberseguridad"},
     {"id": 108305, "titulo": "Concurso de Startups"},
     {"id": 108069, "titulo": "Semana de la Ingeniería"}
+    #{"id": 108001, "titulo": "Conferencia de Tecnología", "imagen": "/static/afiches/tech_conference.jpg", "es_evento": 1},
+    #{"id": 108002, "titulo": "Promoción Descuentos", "imagen": "/static/afiches/descuentos.jpg", "es_evento": 0}
 ]
 
-@app.route("/api/afiches", methods=["GET"])
-def get_afiches():
+@app.route("/api/afiches", methods=["GET","POST"])
+def create_afiche():
+    if request.method == "POST":
+        data = request.get_json() or request.form
+        # Validar campos requeridos según la tabla imagenes_clasificadas
+        required_fields = ["id", "nombre"]
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
+        try:
+            clasificacion = int(data.get("clasificacion", 0))
+            if clasificacion not in [0, 1]:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return jsonify({"error": "El campo clasificacion debe ser 0 o 1"}), 400
+
+        # Verificar si ya existe en la base de datos
+        if ImagenClasificada.query.get(data["id"]):
+            return jsonify({"error": "Ya existe un afiche con ese ID"}), 409
+
+        # Crear y guardar el nuevo afiche
+        nuevo_afiche = ImagenClasificada(
+            id=data["id"],
+            nombre=data["nombre"],
+            clasificacion=clasificacion
+        )
+
+        try:
+            db.session.add(nuevo_afiche)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": f"No se pudo guardar el afiche: {str(e)}"}), 500
+
+        return jsonify({
+            "mensaje": "Afiche creado con éxito",
+            "afiche": {
+                "id": nuevo_afiche.id,
+                "nombre": nuevo_afiche.nombre,
+                "clasificacion": nuevo_afiche.clasificacion
+            }
+        }), 201
+    
     return jsonify(afiches)
 
 @login_manager.user_loader

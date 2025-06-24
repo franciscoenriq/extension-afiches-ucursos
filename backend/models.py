@@ -16,3 +16,13 @@ class Reclamo(db.Model):
 
     def __repr__(self):
         return f"<Reclamo {self.id} por usuario {self.user_id}>"
+    
+class ImagenClasificada(db.Model):
+    __tablename__ = 'imagenes_clasificadas'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    clasificacion = db.Column(db.SmallInteger, nullable=False)  # 0 o 1
+
+    def __repr__(self):
+        return f"<ImagenClasificada id={self.id} nombre='{self.nombre}' clasificacion={self.clasificacion}>"
