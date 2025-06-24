@@ -8,7 +8,6 @@ from models import *
 from forms import *
 from flask_ninja import NinjaAPI
 from flask_cors import CORS
-import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -83,8 +82,21 @@ def create_afiche():
                 "clasificacion": nuevo_afiche.clasificacion
             }
         }), 201
-    
-    return jsonify(afiches)
+    afiches = (ImagenClasificada.query
+            .filter_by(clasificacion=1)
+            .order_by(ImagenClasificada.id.desc())
+            .limit(100)
+            .all())
+            
+    afiches_json = [
+        {
+            "id":afiche.id,
+            "nombre":afiche.nombre,
+            "clasificacion":afiche.clasificacion
+        }
+        for afiche in afiches
+    ]
+    return jsonify(afiches_json)
 
 @login_manager.user_loader
 def load_user(user_id):

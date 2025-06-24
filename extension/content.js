@@ -120,7 +120,7 @@
                 li.style.gap = "10px";
 
                 const titulo = document.createElement("span");
-                titulo.textContent = afiche.titulo;
+                titulo.textContent = afiche.nombre;
                 titulo.style.cursor = "pointer";
                 titulo.style.color = "#d35400";
                 titulo.style.fontWeight = "200";
