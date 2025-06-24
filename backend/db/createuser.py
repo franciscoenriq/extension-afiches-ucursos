@@ -1,8 +1,6 @@
 #en la terminal agregar export FLASK_APP=app.py
-from app import db, bcrypt
-from models import User
+from flask_bcrypt import Bcrypt
 
-hashed_pw = bcrypt.generate_password_hash("claveSegura").decode("utf-8")
-u = User(username="admin", password=hashed_pw)
-db.session.add(u)
-db.session.commit()
+bcrypt = Bcrypt()
+hashed_pw = bcrypt.generate_password_hash("grupoIAtaller6").decode("utf-8")
+print(hashed_pw)

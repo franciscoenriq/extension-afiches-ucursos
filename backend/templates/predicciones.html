@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Predicciones</title>
+</head>
+<body>
+    <h1>Predicciones recibidas</h1>
+    <button onclick="location.reload()">Recargar predicciones</button>
+
+    <table border="1" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Predicción</th>
+                <th>Prob. Evento</th>
+                <th>Prob. No Evento</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in predicciones %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.title }}</td>
+                <td>{{ p.prediction }}</td>
+                <td>{{ p.probability_evento }}</td>
+                <td>{{ p.probability_no_evento }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

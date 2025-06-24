@@ -26,3 +26,21 @@ class ImagenClasificada(db.Model):
 
     def __repr__(self):
         return f"<ImagenClasificada id={self.id} nombre='{self.nombre}' clasificacion={self.clasificacion}>"
+    
+class ImagenPredicha(db.Model):
+    __tablename__ = 'imagenes_predichas'
+
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(255), nullable=False)
+    clasificacion = db.Column(db.SmallInteger, nullable=False)  # 0 = no evento, 1 = evento
+    probability_evento = db.Column(db.Float)
+    probability_no_evento = db.Column(db.Float)
+    fecha = db.Column(db.String(40))
+    def __repr__(self):
+        return (
+            f"<ImagenPredicha id={self.id} nombre='{self.nombre}' "
+            f"clasificacion={self.clasificacion} "
+            f"prob_evento={self.probability_evento} "
+            f"prob_no_evento={self.probability_no_evento}>"
+            f"fecha={self.fecha}"
+        )

@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask, request, render_template, redirect, url_for, flash,jsonify
+import requests
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from config import Config
@@ -22,66 +23,42 @@ login_manager.login_view = "login"
 
 ninja = NinjaAPI(app)
 
-# Lista de afiches simulados
-afiches = [ 
-    {"id": 108413, "titulo": "Feria de Innovación 2025"},
-    {"id": 107405, "titulo": "Charla de Ciberseguridad"},
-    {"id": 108305, "titulo": "Concurso de Startups"},
-    {"id": 108069, "titulo": "Semana de la Ingeniería"},
-    {"id": 108413, "titulo": "Feria de Innovación 2025"},
-    {"id": 107405, "titulo": "Charla de Ciberseguridad"},
-    {"id": 108305, "titulo": "Concurso de Startups"},
-    {"id": 108069, "titulo": "Semana de la Ingeniería"},
-    {"id": 108413, "titulo": "Feria de Innovación 2025"},
-    {"id": 107405, "titulo": "Charla de Ciberseguridad"},
-    {"id": 108305, "titulo": "Concurso de Startups"},
-    {"id": 108069, "titulo": "Semana de la Ingeniería"}
-    #{"id": 108001, "titulo": "Conferencia de Tecnología", "imagen": "/static/afiches/tech_conference.jpg", "es_evento": 1},
-    #{"id": 108002, "titulo": "Promoción Descuentos", "imagen": "/static/afiches/descuentos.jpg", "es_evento": 0}
-]
+@app.route("/mostrar_predicciones")
+def mostrar_predicciones():
+    # URL del servidor externo que tiene /predictions
+    url_api = "http://172.17.69.228:9006/Afiches-IA/predict"
+    try:
+        response = requests.get(url_api)
+        response.raise_for_status()  # Para levantar excepción si falla
+        data = response.json()
+         # Insertar cada predicción en la tabla imagenes_predichas
+        for item in data:
+            # Verificar si ya existe (para evitar duplicados)
+            existente = ImagenPredicha.query.get(item["id"])
+            if existente:
+                continue  # O podrías actualizar si lo deseas
 
-@app.route("/api/afiches", methods=["GET","POST"])
+            nueva_prediccion = ImagenPredicha(
+                id=item["id"],
+                nombre=item["title"].replace("'", "''"),
+                clasificacion=item["prediction"],
+                probability_evento=item["probability_evento"],
+                probability_no_evento=item["probability_no_evento"],
+                fecha=item["date"]
+            )
+            db.session.add(nueva_prediccion)
+
+        db.session.commit()
+    except requests.RequestException as e:
+        data = []
+        print("Error al consultar /predictions:", e)
+    except Exception as ex:
+        db.session.rollback()
+        print("Error al guardar en la base de datos:", ex)
+
+    return render_template("predicciones.html", predicciones=data)
+@app.route("/api/afiches", methods=["GET"])
 def create_afiche():
-    if request.method == "POST":
-        data = request.get_json() or request.form
-        # Validar campos requeridos según la tabla imagenes_clasificadas
-        required_fields = ["id", "nombre"]
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
-        try:
-            clasificacion = int(data.get("clasificacion", 0))
-            if clasificacion not in [0, 1]:
-                raise ValueError()
-        except (ValueError, TypeError):
-            return jsonify({"error": "El campo clasificacion debe ser 0 o 1"}), 400
-
-        # Verificar si ya existe en la base de datos
-        if ImagenClasificada.query.get(data["id"]):
-            return jsonify({"error": "Ya existe un afiche con ese ID"}), 409
-
-        # Crear y guardar el nuevo afiche
-        nuevo_afiche = ImagenClasificada(
-            id=data["id"],
-            nombre=data["nombre"],
-            clasificacion=clasificacion
-        )
-
-        try:
-            db.session.add(nuevo_afiche)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({"error": f"No se pudo guardar el afiche: {str(e)}"}), 500
-
-        return jsonify({
-            "mensaje": "Afiche creado con éxito",
-            "afiche": {
-                "id": nuevo_afiche.id,
-                "nombre": nuevo_afiche.nombre,
-                "clasificacion": nuevo_afiche.clasificacion
-            }
-        }), 201
     afiches = (ImagenClasificada.query
             .filter_by(clasificacion=1)
             .order_by(ImagenClasificada.id.desc())
