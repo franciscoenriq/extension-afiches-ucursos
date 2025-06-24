@@ -17,7 +17,7 @@
         const boton = document.createElement("button");
 
         // Contenido 
-        boton.textContent = "Ver afiches";
+        boton.textContent = "Ver Eventos";
 
         // Posicionamiento
         boton.style.bottom = "20px";
@@ -144,7 +144,7 @@
                     window.open(url, "_self");
                 });
 
-
+                /*
                 const btnReclamo = document.createElement("button");
                 btnReclamo.textContent = "Reportar reclamo";
                 btnReclamo.style.marginTop = "4px";
@@ -180,10 +180,10 @@
                             console.error("Error al enviar reclamo:", err);
                             alert("Hubo un problema al enviar el reclamo.");
                         });
-                });
+                });*/
 
                 li.appendChild(titulo);
-                li.appendChild(btnReclamo);
+                //li.appendChild(btnReclamo);
                 lista.appendChild(li);
             });
 
