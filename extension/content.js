@@ -32,6 +32,7 @@
         boton.style.border = "1px solid #287171";
         boton.style.borderRadius = "4px";
         boton.style.cursor = "pointer";
+        
 
         // Hover (simulación de :hover)
         boton.addEventListener("mouseenter", () => {
@@ -101,6 +102,14 @@
         return panel;
     }
 
+    // Función para decodificar entidades HTML
+    function decodeHtmlEntities(str) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = str;
+        return txt.value;
+    }
+
+
     // TODO: Que se ordene por id
     async function cargarAfiches(lista) {
         try {
@@ -122,7 +131,7 @@
                 li.style.gap = "10px";
 
                 const titulo = document.createElement("span");
-                titulo.textContent = afiche.nombre;
+                titulo.textContent = decodeHtmlEntities(afiche.nombre);
                 titulo.style.cursor = "pointer";
                 titulo.style.color = "#d35400";
                 titulo.style.fontWeight = "200";
