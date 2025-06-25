@@ -32,7 +32,6 @@
         boton.style.border = "1px solid #287171";
         boton.style.borderRadius = "4px";
         boton.style.cursor = "pointer";
-        
 
         // Hover (simulación de :hover)
         boton.addEventListener("mouseenter", () => {
@@ -54,10 +53,16 @@
 
         // Posicionamiento
         panel.style.position = "fixed";
-        panel.style.bottom = "60px";
+        panel.style.bottom = "70px";
         panel.style.right = "20px";
         panel.style.width = "320px";
         panel.style.maxHeight = "400px";
+        panel.style.overflow = "hidden";
+
+        // Animación via transform y opacity (desde JS)
+        panel.style.transform = "scale(0.8) translate(20px, 20px)";
+        panel.style.opacity = "0";
+        panel.style.transition = "transform 0.4s ease, opacity 0.4s ease";
 
         // Estilo
         panel.style.overflowY = "auto";
@@ -108,7 +113,6 @@
         txt.innerHTML = str;
         return txt.value;
     }
-
 
     // TODO: Que se ordene por id
     async function cargarAfiches(lista) {
@@ -207,12 +211,30 @@
     const panel = crearPanelAfiches();
     const lista = panel.querySelector("#lista-afiches");
 
+    let panelAbierto = false;
+
     boton.addEventListener("click", () => {
-        if (panel.style.display === "none") {
-            panel.style.display = "block";
+        if (!panelAbierto) {
             cargarAfiches(lista);
+            panel.style.display = "block";
+
+            // Necesitamos esperar un frame para que el display se aplique antes de animar
+            requestAnimationFrame(() => {
+                panel.style.transform = "scale(1) translate(0, 0)";
+                panel.style.opacity = "1";
+            });
         } else {
-            panel.style.display = "none";
+            // Cerrar con animación
+            panel.style.transform = "scale(0.8) translate(20px, 20px)";
+            panel.style.opacity = "0";
+
+            setTimeout(() => {
+                if (!panelAbierto) {
+                    panel.style.display = "none";
+                }
+            }, 400); // Tiempo igual al de la transición
         }
+
+        panelAbierto = !panelAbierto;
     });
 })();
