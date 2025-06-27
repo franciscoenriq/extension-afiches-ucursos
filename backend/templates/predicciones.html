@@ -22,9 +22,9 @@
             <tr>
                 <td>{{ p.id }}</td>
                 <td>{{ p.title }}</td>
-                <td>{{ p.prediction }}</td>
-                <td>{{ p.probability_evento }}</td>
-                <td>{{ p.probability_no_evento }}</td>
+                <td>{% if p.prediction == 1 %}Evento{% else %}No evento{% endif %}</td>
+                <td>{{ "%.2f"|format(p.probability_evento) }}</td>
+                <td>{{ "%.2f"|format(p.probability_no_evento) }}</td>
             </tr>
             {% endfor %}
         </tbody>
