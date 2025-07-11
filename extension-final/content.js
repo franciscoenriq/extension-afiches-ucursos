@@ -1,7 +1,7 @@
 (function () {
     const urlActual = window.location.href;
 
-    const esPaginaCanales = urlActual.includes("/mis_canales/");
+    const esPaginaCanales = urlActual.includes("/");
 
     if (!esPaginaCanales) {
         return; // Solo ejecutar en la sección de "mis canales"
@@ -81,6 +81,31 @@
         lista.style.overflowY = "auto";
 
         panel.appendChild(lista);
+        // ⚠️ Iframe oculto por defecto
+        const iframe = document.createElement("iframe");
+        iframe.id = "afiche-iframe";
+        iframe.style.width = "100%";
+        iframe.style.height = "300px";
+        iframe.style.border = "none";
+        iframe.style.display = "none";
+        panel.appendChild(iframe);
+
+        // Botón de volver
+        const volver = document.createElement("button");
+        volver.textContent = "← Volver";
+        volver.style.display = "none";
+        volver.style.marginTop = "10px";
+        volver.style.background = "#eee";
+        volver.style.border = "1px solid #ccc";
+        volver.style.borderRadius = "4px";
+        volver.style.padding = "4px 8px";
+        volver.style.cursor = "pointer";
+        volver.addEventListener("click", () => {
+            iframe.style.display = "none";
+            volver.style.display = "none";
+            lista.style.display = "block";
+        });
+        panel.appendChild(volver);
         document.body.appendChild(panel);
         return panel;
     }
@@ -102,6 +127,8 @@
             }
 
             lista.innerHTML = "";
+            const iframe = document.getElementById("afiche-iframe");
+            const volver = iframe?.nextElementSibling;
             afiches.forEach(afiche => {
                 const li = document.createElement("li");
                 li.style.display = "flex";
@@ -124,7 +151,12 @@
                 });
                 titulo.addEventListener("click", () => {
                     const url = `https://www.u-cursos.cl/ingenieria/2/afiches/o/${afiche.id}`;
-                    window.open(url, "_self");
+                    if (iframe) {
+                        iframe.src = url;
+                        iframe.style.display = "block";
+                        if (volver) volver.style.display = "inline-block";
+                        lista.style.display = "none";
+                    }
                 });
 
                 li.appendChild(titulo);
