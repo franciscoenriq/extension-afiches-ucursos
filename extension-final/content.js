@@ -13,7 +13,6 @@
     
         const li = document.createElement("li");
         li.className = "servicio";
-        li.style.marginTop = "-19px"; 
         const a = document.createElement("a");
         a.href = "#";
         a.style.display = "flex";
@@ -25,13 +24,11 @@
         const img = document.createElement("img");
         img.alt = "";
         img.src = chrome.runtime.getURL("img/eventos.png");
-        img.style.width = "55px";
-        img.style.height = "55px";
+        img.style.width = "31px";
+        img.style.height = "31px";
     
         const span = document.createElement("span");
         span.textContent = "Eventos";
-        span.style.marginTop = "0px";
-        span.style.fontSize = "12px";
     
         a.appendChild(img);
         a.appendChild(span);
