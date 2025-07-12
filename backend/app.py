@@ -23,6 +23,39 @@ login_manager.login_view = "login"
 
 ninja = NinjaAPI(app)
 
+
+@app.route("/afichesApp/afichesApp-front/guardar_predicciones", methods=['POST'])
+def guardar_predicciones():
+    try:
+        data = request.json  # Recibe JSON directamente en el POST
+
+        for item in data:
+            # Verificar si ya existe
+            existente = ImagenPredicha.query.get(item["id"])
+            if existente:
+                continue  # O actualiza si deseas
+
+            nueva_prediccion = ImagenPredicha(
+                id=item["id"],
+                nombre=item["title"].replace("'", "''"),
+                clasificacion=item["prediction"],
+                probability_evento=item["probability_evento"],
+                probability_no_evento=item["probability_no_evento"],
+                fecha=item["date"]
+            )
+            db.session.add(nueva_prediccion)
+
+        db.session.commit()
+        return jsonify({"status": "ok", "mensaje": "Predicciones guardadas correctamente."}), 200
+
+    except Exception as ex:
+        db.session.rollback()
+        print("Error al guardar en la base de datos:", ex)
+        return jsonify({"status": "error", "mensaje": str(ex)}), 500
+
+
+        
+
 @app.route("/afichesApp/afichesApp-front/mostrar_predicciones")
 def mostrar_predicciones():
     # URL del servidor externo que tiene /predictions

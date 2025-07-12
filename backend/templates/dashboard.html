@@ -34,18 +34,90 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        /* Estilos base del botón (puedes ajustarlos) */
+    #btnPredicciones {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    #btnPredicciones:hover:not(:disabled) {
+        background-color: #0056b3;
+    }
+
+    #btnPredicciones:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    /* Estilos para el contenedor de la animación (oculto por defecto) */
+    #loadingAnimation {
+        display: none; /* Oculto por defecto */
+        margin-left: 8px; /* Espacio entre el texto y la animación */
+    }
+
+    /* Keyframes para la animación de los puntos */
+    @keyframes dot-pulse {
+        0%, 100% {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Estilos para cada punto de la animación */
+    .loading-dot {
+        display: inline-block;
+        width: 6px; /* Tamaño de los puntos */
+        height: 6px;
+        background-color: white; /* Color de los puntos */
+        border-radius: 50%;
+        animation: dot-pulse 1.4s infinite ease-in-out; /* Aplica la animación */
+    }
+
+    /* Retrasos para que los puntos aparezcan secuencialmente */
+    .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dot:nth-child(3) { animation-delay: 0s; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Hola, {{ user.username }} 👋</h1>
         <p>Bienvenido al panel de control.</p>
-        <form action="{{ url_for('ver_reclamos') }}">
-            <button type="submit">Ver sugerencias de correcciones</button>
-        </form>
-        <form action="{{ url_for('mostrar_predicciones') }}">
-            <button type="submit">Ver predicciones</button>
+        <form action="{{ url_for('mostrar_predicciones') }}" id="formPredicciones">
+            <button type="submit" id="btnPredicciones">Clasificar nuevos afiches</button>
         </form>
     </div>
 </body>
+
+<script>
+    const form = document.getElementById('formPredicciones');
+    const button = document.getElementById('btnPredicciones');
+
+    form.addEventListener('submit', () => {
+        // Deshabilitar el botón
+        button.disabled = true;
+        
+        // Cambiar el texto del botón a "Cargando..." y añadir los puntos
+        button.innerHTML = 'Cargando<span id="loadingAnimation">' +
+                           '<span class="loading-dot"></span>' +
+                           '<span class="loading-dot"></span>' +
+                           '<span class="loading-dot"></span>' +
+                           '</span>';
+        
+        // Mostrar la animación (ahora es parte del innerHTML)
+        document.getElementById('loadingAnimation').style.display = 'inline-block';
+    });
+</script>
+
 </html>

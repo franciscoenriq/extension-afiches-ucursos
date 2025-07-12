@@ -2,12 +2,85 @@
 <html>
 <head>
     <title>Predicciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6; /* Un gris muy claro para el fondo */
+            color: #333;
+        }
+
+        h1 {
+            color: #007bff; /* El mismo azul de los botones */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Estilo para el botón "Recargar predicciones" */
+        .reload-button {
+            display: block; /* Para que ocupe su propia línea */
+            margin: 0 auto 30px auto; /* Centrar y añadir espacio abajo */
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff; /* Azul consistente */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .reload-button:hover {
+            background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+        }
+
+        /* Estilos para la tabla */
+        table {
+            width: 100%; /* Ocupa todo el ancho disponible */
+            border-collapse: collapse; /* Elimina los bordes dobles */
+            margin-top: 20px; /* Espacio superior */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra suave para un efecto elevado */
+            border-radius: 8px; /* Bordes ligeramente redondeados */
+            overflow: hidden; /* Asegura que la sombra y el borde redondeado se vean bien */
+            background-color: white; /* Fondo blanco para la tabla */
+        }
+
+        /* Estilos para el encabezado de la tabla */
+        thead {
+            background-color: #007bff; /* Azul para el encabezado */
+            color: white;
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        /* Estilos para las filas del cuerpo de la tabla */
+        tbody tr {
+            border-bottom: 1px solid #ddd; /* Línea divisoria suave entre filas */
+        }
+
+        tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3; /* Rayas alternas para mejor legibilidad */
+        }
+
+        tbody tr:hover {
+            background-color: #e0f2f7; /* Un azul muy suave al pasar el ratón por la fila */
+        }
+
+        td {
+            padding: 10px 15px;
+            vertical-align: middle; /* Alinea el contenido verticalmente */
+        }
+    </style>
 </head>
 <body>
     <h1>Predicciones recibidas</h1>
-    <button onclick="location.reload()">Recargar predicciones</button>
+    <button class="reload-button" onclick="location.reload()">Recargar predicciones</button>
 
-    <table border="1" style="margin-top: 20px;">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -22,9 +95,9 @@
             <tr>
                 <td>{{ p.id }}</td>
                 <td>{{ p.title }}</td>
-                <td>{% if p.prediction == 1 %}Evento{% else %}No evento{% endif %}</td>
-                <td>{{ "%.2f"|format(p.probability_evento) }}</td>
-                <td>{{ "%.2f"|format(p.probability_no_evento) }}</td>
+                <td>{{ p.prediction }}</td>
+                <td>{{ p.probability_evento }}</td>
+                <td>{{ p.probability_no_evento }}</td>
             </tr>
             {% endfor %}
         </tbody>
