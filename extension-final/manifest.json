@@ -1,25 +1,37 @@
 {
-    "manifest_version": 3,
-    "name": "Afiches uCursos Extension",
-    "version": "1.0",
-    "description": "Muestra los afiches directamente en uCursos desde la barra de canales",
-    "permissions": ["scripting", "tabs"],
-    "host_permissions": [
-      "https://www.u-cursos.cl/ingenieria/2/*",
-      "http://localhost:5000/api/afiches"
-    ],
-    "content_scripts": [
-      {
-        "resources": ["img/eventos.png"],
-        "matches": ["https://www.u-cursos.cl/*"],
-        "js": ["content.js"]
-      }
-    ],
-    "web_accessible_resources": [
-        {
-        "resources": ["img/eventos.png"],
-        "matches": ["<all_urls>"]
-        }
-    ]
-  }
-  
+  "manifest_version": 3,
+  "name": "Afiches uCursos Extension",
+  "version": "1.0",
+  "description": "Muestra los afiches directamente en uCursos desde la barra de canales",
+  "permissions": [
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.u-cursos.cl/*",
+    "http://localhost:5000/api/afiches"
+  ],
+  "content_scripts": [
+    {
+      "resources": [
+        "img/eventos.png"
+      ],
+      "matches": [
+        "https://www.u-cursos.cl/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "img/eventos.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

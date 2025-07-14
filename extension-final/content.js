@@ -1,18 +1,52 @@
 (function () {
     const urlActual = window.location.href;
+    const esPaginaUcurso = urlActual.startsWith("https://www.u-cursos.cl/ingenieria/2/");
+    if (!esPaginaUcurso) return;
 
-    const esPaginaCanales = urlActual.includes("/");
+    let contenedor = null;
 
-    if (!esPaginaCanales) {
-        return; // Solo ejecutar en la sección de "mis canales"
+    // Detecta si uCursos está en modo oscuro evaluando estilos aplicados al body
+    function esModoOscuro() {
+        const bg = getComputedStyle(document.body).backgroundColor;
+        // Color típico del tema oscuro: rgb(24, 24, 24) u otros oscuros
+        const [r, g, b] = bg.match(/\d+/g).map(Number);
+        return (r + g + b) / 3 < 60; // muy oscuro
     }
+
+    // Aplica estilos claros u oscuros al contenedor de eventos
+    function aplicarTema() {
+        if (!contenedor) return;
+
+        const oscuro = esModoOscuro();
+        contenedor.style.backgroundColor = oscuro ? "#1e1e1e" : "#ffffff";
+        contenedor.style.color = oscuro ? "#f1f1f1" : "#000000";
+        contenedor.style.border = "1px solid " + (oscuro ? "#444" : "#ccc");
+        contenedor.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+
+        const enlaces = contenedor.querySelectorAll("a");
+        enlaces.forEach(a => {
+            a.style.color = oscuro ? "#4EA6EA" : "#007bff";
+        });
+
+        const botones = contenedor.querySelectorAll("button");
+        botones.forEach(btn => {
+            btn.style.background = oscuro ? "#333" : "#eee";
+            btn.style.border = "1px solid " + (oscuro ? "#666" : "#ccc");
+            btn.style.color = oscuro ? "#f1f1f1" : "#000";
+        });
+    }
+
+    // Observa cambios de tema de uCursos
+    const observer = new MutationObserver(() => aplicarTema());
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
 
     function crearItemLateral() {
         const ulModulos = document.querySelector("ul.modulos");
         if (!ulModulos) return;
-    
+
         const li = document.createElement("li");
         li.className = "servicio";
+
         const a = document.createElement("a");
         a.href = "#";
         a.style.display = "flex";
@@ -20,181 +54,119 @@
         a.style.alignItems = "center";
         a.style.textAlign = "center";
         a.style.padding = "6px 0";
-    
+
         const img = document.createElement("img");
         img.alt = "";
         img.src = chrome.runtime.getURL("img/eventos.png");
         img.style.width = "31px";
         img.style.height = "31px";
-    
+
         const span = document.createElement("span");
         span.textContent = "Eventos";
-    
+
         a.appendChild(img);
         a.appendChild(span);
         li.appendChild(a);
         ulModulos.appendChild(li);
-    
+
         return a;
     }
-    
 
-    // Reutiliza tu código original para el panel y su lógica:
-    function crearPanelAfiches() {
-        const panel = document.createElement("div");
-        panel.id = "panel-afiches";
+    function insertarSeccionEventosFija() {
+        if (document.getElementById("panel-fijo-afiches")) return;
 
-        panel.style.position = "fixed";
-        panel.style.bottom = "70px";
-        panel.style.right = "20px";
-        panel.style.width = "320px";
-        panel.style.maxHeight = "400px";
-        panel.style.overflow = "hidden";
-        panel.style.transform = "scale(0.8) translate(20px, 20px)";
-        panel.style.opacity = "0";
-        panel.style.transition = "transform 0.4s ease, opacity 0.4s ease";
-        panel.style.overflowY = "auto";
-        panel.style.backgroundColor = "white";
-        panel.style.border = "1px solid #ccc";
-        panel.style.borderRadius = "5px";
-        panel.style.padding = "10px";
-        panel.style.boxShadow = "0 0 10px rgba(0,0,0,0.2)";
-        panel.style.zIndex = "9999";
-        panel.style.display = "none";
+        contenedor = document.createElement("div");
+        contenedor.id = "panel-fijo-afiches";
 
-        const titulo = document.createElement("h3");
-        titulo.textContent = "Próximos Eventos";
-        titulo.style.fontWeight = "600";
-        titulo.style.color = "#d35400";
-        panel.appendChild(titulo);
-
-        const horizontalLine = document.createElement("hr");
-        panel.appendChild(horizontalLine);
-
-        const lista = document.createElement("ul");
-        lista.id = "lista-afiches";
-        lista.innerHTML = "<li>Cargando...</li>";
-        lista.style.listStyle = "none";
-        lista.style.padding = "0";
-        lista.style.margin = "0";
-        lista.style.maxHeight = "300px";
-        lista.style.overflowY = "auto";
-
-        panel.appendChild(lista);
-        // ⚠️ Iframe oculto por defecto
-        const iframe = document.createElement("iframe");
-        iframe.id = "afiche-iframe";
-        iframe.style.width = "100%";
-        iframe.style.height = "300px";
-        iframe.style.border = "none";
-        iframe.style.display = "none";
-        panel.appendChild(iframe);
-
-        // Botón de volver
-        const volver = document.createElement("button");
-        volver.textContent = "← Volver";
-        volver.style.display = "none";
-        volver.style.marginTop = "10px";
-        volver.style.background = "#eee";
-        volver.style.border = "1px solid #ccc";
-        volver.style.borderRadius = "4px";
-        volver.style.padding = "4px 8px";
-        volver.style.cursor = "pointer";
-        volver.addEventListener("click", () => {
-            iframe.style.display = "none";
-            volver.style.display = "none";
-            lista.style.display = "block";
+        Object.assign(contenedor.style, {
+            position: "fixed",
+            top: "80px",
+            right: "20px",
+            width: "340px",
+            maxHeight: "80vh",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            zIndex: "9999",
+            overflowY: "auto",
         });
-        panel.appendChild(volver);
-        document.body.appendChild(panel);
-        return panel;
+
+        contenedor.innerHTML = `
+            <h3 style="display:flex; align-items:center; justify-content:space-between; margin-top:0;">
+                <span>
+                    <img src="${chrome.runtime.getURL("img/eventos.png")}" alt="" style="width:20px; vertical-align:middle; margin-right:6px;">
+                    Próximos Eventos
+                </span>
+                <button id="cerrar-afiches" style="
+                    border-radius:4px;
+                    padding:2px 8px;
+                    cursor:pointer;">×</button>
+            </h3>
+            <div id="contenido-afiches">
+                <p>Cargando eventos...</p>
+            </div>
+        `;
+
+        document.body.appendChild(contenedor);
+        aplicarTema(); // aplicar estilos según modo
+
+        document.getElementById("cerrar-afiches").addEventListener("click", () => {
+            contenedor.style.display = "none";
+        });
+
+        cargarAfichesLista();
     }
 
-    function decodeHtmlEntities(str) {
-        const txt = document.createElement("textarea");
-        txt.innerHTML = str;
-        return txt.value;
-    }
-
-    async function cargarAfiches(lista) {
+    async function cargarAfichesLista() {
         try {
             const res = await fetch("https://grupo6.juan.cl/afichesApp/afichesApp-front/api/afiches");
             const afiches = await res.json();
 
-            if (!afiches.length) {
-                lista.innerHTML = "<li>No hay afiches disponibles</li>";
-                return;
-            }
+            const lista = document.createElement("ul");
+            lista.style.listStyle = "none";
+            lista.style.padding = "0";
+            lista.style.margin = "0";
 
-            lista.innerHTML = "";
-            const iframe = document.getElementById("afiche-iframe");
-            const volver = iframe?.nextElementSibling;
             afiches.forEach(afiche => {
-                const li = document.createElement("li");
-                li.style.display = "flex";
-                li.style.justifyContent = "space-between";
-                li.style.alignItems = "center";
-                li.style.marginBottom = "8px";
-                li.style.gap = "10px";
+                const item = document.createElement("li");
+                item.style.marginBottom = "12px";
+                item.style.borderBottom = "1px solid #444";
+                item.style.paddingBottom = "8px";
 
-                const titulo = document.createElement("span");
-                titulo.textContent = decodeHtmlEntities(afiche.nombre);
-                titulo.style.cursor = "pointer";
-                titulo.style.color = "#d35400";
-                titulo.style.fontWeight = "200";
+                const nombre = afiche.nombre || "Evento sin título";
+                const url = `https://www.u-cursos.cl/ingenieria/2/afiches/detalle?id=${afiche.id}`;
 
-                titulo.addEventListener("mouseenter", () => {
-                    titulo.style.color = "#e67e22";
-                });
-                titulo.addEventListener("mouseleave", () => {
-                    titulo.style.color = "#d35400";
-                });
-                titulo.addEventListener("click", () => {
-                    const url = `https://www.u-cursos.cl/ingenieria/2/afiches/o/${afiche.id}`;
-                    if (iframe) {
-                        iframe.src = url;
-                        iframe.style.display = "block";
-                        if (volver) volver.style.display = "inline-block";
-                        lista.style.display = "none";
-                    }
-                });
+                const aColor = esModoOscuro() ? "#4EA6EA" : "#007bff";
 
-                li.appendChild(titulo);
-                lista.appendChild(li);
+                item.innerHTML = `
+                    <p style="margin:0;">
+                        <strong>📌 ${nombre}</strong><br>
+                        <a href="${url}" target="_blank" style="color:${aColor};">
+                            Ver afiche →
+                        </a>
+                    </p>
+                `;
+                lista.appendChild(item);
             });
 
+            const contenedorLista = document.getElementById("contenido-afiches");
+            contenedorLista.innerHTML = "";
+            contenedorLista.appendChild(lista);
         } catch (err) {
-            console.error("Error al obtener afiches:", err);
-            lista.innerHTML = "<li>Error al cargar datos</li>";
+            console.error("Error cargando eventos:", err);
+            const contenedorLista = document.getElementById("contenido-afiches");
+            contenedorLista.innerHTML = "<p>Error al cargar datos.</p>";
         }
     }
 
     const enlaceEventos = crearItemLateral();
-    const panel = crearPanelAfiches();
-    const lista = panel.querySelector("#lista-afiches");
-
-    let panelAbierto = false;
-
-    enlaceEventos.addEventListener("click", (e) => {
+    enlaceEventos?.addEventListener("click", (e) => {
         e.preventDefault();
-
-        if (!panelAbierto) {
-            cargarAfiches(lista);
-            panel.style.display = "block";
-            requestAnimationFrame(() => {
-                panel.style.transform = "scale(1) translate(0, 0)";
-                panel.style.opacity = "1";
-            });
+        const panel = document.getElementById("panel-fijo-afiches");
+        if (panel) {
+            panel.style.display = panel.style.display === "none" ? "block" : "none";
+            aplicarTema(); // vuelve a aplicar si estaba oculto
         } else {
-            panel.style.transform = "scale(0.8) translate(20px, 20px)";
-            panel.style.opacity = "0";
-            setTimeout(() => {
-                if (!panelAbierto) {
-                    panel.style.display = "none";
-                }
-            }, 400);
+            insertarSeccionEventosFija();
         }
-
-        panelAbierto = !panelAbierto;
     });
 })();
