@@ -10,6 +10,7 @@ from forms import *
 from flask_ninja import NinjaAPI
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para desarrollo (todas las rutas y orígenes)
@@ -92,21 +93,74 @@ def mostrar_predicciones():
     return render_template("predicciones.html", predicciones=data)
 @app.route("/afichesApp/afichesApp-front/api/afiches", methods=["GET"])
 def create_afiche():
+    # Obtener IDs de afiches que tienen reclamos aceptados
+    afiches_reportados = db.session.query(Reclamo.foto_id).filter_by(estado='aceptado').distinct().all()
+    ids_reportados = [afiche[0] for afiche in afiches_reportados]
+    
+    # Filtrar afiches excluyendo los que tienen reclamos aceptados
     afiches = (ImagenPredicha.query
             .filter_by(clasificacion=1)
+            .filter(~ImagenPredicha.id.in_(ids_reportados))  # Excluir los reportados
             .order_by(ImagenPredicha.fecha.desc())
             .limit(100)
             .all())
             
     afiches_json = [
         {
-            "id":afiche.id,
-            "nombre":afiche.nombre,
-            "clasificacion":afiche.clasificacion
+            "id": afiche.id,
+            "nombre": afiche.nombre,
+            "clasificacion": afiche.clasificacion,
+            "fecha": afiche.fecha,
+            "probability_evento": afiche.probability_evento
         }
         for afiche in afiches
     ]
     return jsonify(afiches_json)
+
+@app.route("/afichesApp/afichesApp-front/api/afiches-reportados", methods=["GET"])
+def get_afiches_reportados():
+    """Endpoint que devuelve solo los IDs de afiches con reclamos aceptados"""
+    try:
+        # Obtener IDs de afiches que tienen reclamos aceptados
+        afiches_reportados = db.session.query(Reclamo.foto_id).filter_by(estado='aceptado').distinct().all()
+        
+        # Convertir a lista de diccionarios con foto_id
+        reportados_json = [{"foto_id": afiche[0]} for afiche in afiches_reportados]
+        
+        return jsonify(reportados_json)
+    except Exception as e:
+        print(f"Error obteniendo afiches reportados: {e}")
+        return jsonify([]), 500
+
+@app.route("/afichesApp/afichesApp-front/api/estadisticas", methods=["GET"])
+def estadisticas_afiches():
+    """Endpoint para obtener estadísticas de afiches y reclamos"""
+    total_afiches = ImagenPredicha.query.filter_by(clasificacion=1).count()
+    
+    # Contar afiches con reclamos aceptados
+    afiches_reportados = db.session.query(Reclamo.foto_id).filter_by(estado='aceptado').distinct().count()
+    
+    # Contar reclamos por estado
+    reclamos_pendientes = Reclamo.query.filter_by(estado='pendiente').count()
+    reclamos_aceptados = Reclamo.query.filter_by(estado='aceptado').count()
+    reclamos_rechazados = Reclamo.query.filter_by(estado='rechazado').count()
+    
+    # Afiches visibles (sin reclamos aceptados)
+    afiches_visibles = total_afiches - afiches_reportados
+    
+    estadisticas = {
+        "total_afiches": total_afiches,
+        "afiches_visibles": afiches_visibles,
+        "afiches_ocultos_por_reclamos": afiches_reportados,
+        "reclamos": {
+            "pendientes": reclamos_pendientes,
+            "aceptados": reclamos_aceptados,
+            "rechazados": reclamos_rechazados,
+            "total": reclamos_pendientes + reclamos_aceptados + reclamos_rechazados
+        }
+    }
+    
+    return jsonify(estadisticas)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -126,7 +180,29 @@ def login():
 @app.route("/afichesApp/afichesApp-front/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", user=current_user)
+    # Obtener estadísticas para mostrar en el dashboard
+    try:
+        total_afiches = ImagenPredicha.query.filter_by(clasificacion=1).count()
+        afiches_reportados = db.session.query(Reclamo.foto_id).filter_by(estado='aceptado').distinct().count()
+        reclamos_pendientes = Reclamo.query.filter_by(estado='pendiente').count()
+        afiches_visibles = total_afiches - afiches_reportados
+        
+        estadisticas = {
+            'total_afiches': total_afiches,
+            'afiches_visibles': afiches_visibles,
+            'afiches_ocultos': afiches_reportados,
+            'reclamos_pendientes': reclamos_pendientes
+        }
+    except Exception as e:
+        print(f"Error obteniendo estadísticas: {e}")
+        estadisticas = {
+            'total_afiches': 0,
+            'afiches_visibles': 0,
+            'afiches_ocultos': 0,
+            'reclamos_pendientes': 0
+        }
+    
+    return render_template("dashboard.html", user=current_user, stats=estadisticas)
 
 @app.route("/afichesApp/afichesApp-front/logout")
 @login_required
@@ -156,6 +232,38 @@ def reclamos():
 def ver_reclamos():
     reclamos = Reclamo.query.order_by(Reclamo.fecha.desc()).all()
     return render_template("reclamos.html", reclamos=reclamos)
+
+@app.route("/afichesApp/afichesApp-front/admin/reclamos/aceptar/<int:reclamo_id>", methods=["POST"])
+@login_required
+def aceptar_reclamo(reclamo_id):
+    try:
+        reclamo = Reclamo.query.get_or_404(reclamo_id)
+        reclamo.estado = 'aceptado'
+        reclamo.fecha_resolucion = db.func.now()
+        db.session.commit()
+        
+        flash(f"Reclamo #{reclamo_id} aceptado exitosamente", "success")
+        return redirect(url_for("ver_reclamos"))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al aceptar el reclamo: {str(e)}", "error")
+        return redirect(url_for("ver_reclamos"))
+
+@app.route("/afichesApp/afichesApp-front/admin/reclamos/rechazar/<int:reclamo_id>", methods=["POST"])
+@login_required
+def rechazar_reclamo(reclamo_id):
+    try:
+        reclamo = Reclamo.query.get_or_404(reclamo_id)
+        reclamo.estado = 'rechazado'
+        reclamo.fecha_resolucion = db.func.now()
+        db.session.commit()
+        
+        flash(f"Reclamo #{reclamo_id} rechazado exitosamente", "success")
+        return redirect(url_for("ver_reclamos"))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al rechazar el reclamo: {str(e)}", "error")
+        return redirect(url_for("ver_reclamos"))
 
 application = app
 if __name__ == "__main__":

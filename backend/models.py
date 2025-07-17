@@ -8,14 +8,18 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
 class Reclamo(db.Model):
+    __tablename__ = 'reclamos'
+    
     id = db.Column(db.Integer, primary_key=True)
     foto_id = db.Column(db.Integer, nullable=False)  # ID de la imagen reclamada
     descripcion = db.Column(db.Text, nullable=False)  # Motivo del reclamo
-    timestamp = db.Column(db.DateTime, default=datetime.now)
-    nombre_usuario = db.Column(db.String(100), nullable=False) 
-
+    fecha = db.Column(db.DateTime, default=datetime.now)
+    estado = db.Column(db.String(20), default='pendiente')  # pendiente, aceptado, rechazado
+    tipo_reclamo = db.Column(db.String(50), nullable=True)  # clasificacion_incorrecta, contenido_inapropiado, etc.
+    fecha_resolucion = db.Column(db.DateTime, nullable=True)  # Cuando se resolvió el reclamo
+    
     def __repr__(self):
-        return f"<Reclamo {self.id} por usuario {self.user_id}>"
+        return f"<Reclamo {self.id} - Foto ID: {self.foto_id} - Estado: {self.estado}>"
     
 class ImagenClasificada(db.Model):
     __tablename__ = 'imagenes_clasificadas'

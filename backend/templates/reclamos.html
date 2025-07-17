@@ -4,29 +4,151 @@
     <meta charset="UTF-8">
     <title>Reclamos de Usuarios</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .btn-aceptar {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-rechazar {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .estado-pendiente {
+            background-color: #ffc107;
+            color: black;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .estado-aceptado {
+            background-color: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .estado-rechazado {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .flash-messages {
+            margin: 10px 0;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .enlace-foto {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .enlace-foto:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <h1>Reclamos de Usuarios</h1>
 
+    <!-- Mensajes flash -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
     {% if reclamos %}
-        <table border="1" cellpadding="8">
+        <table>
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Fecha</th>
                     <th>ID Foto</th>
                     <th>Descripción</th>
-                    <th>Usuario</th>
-                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for r in reclamos %}
                 <tr>
                     <td>{{ r.id }}</td>
-                    <td>{{ r.foto_id }}</td>
-                    <td>{{ r.descripcion }}</td>
-                    <td>{{ r.nombre_usuario }}</td>
                     <td>{{ r.fecha.strftime("%Y-%m-%d %H:%M") }}</td>
+                    <td>
+                        <a href="https://www.u-cursos.cl/ingenieria/2/afiches/detalle?id={{ r.foto_id }}" 
+                           target="_blank" 
+                           class="enlace-foto"
+                           title="Ver afiche en uCursos">
+                            {{ r.foto_id }} 🔗
+                        </a>
+                    </td>
+                    <td>{{ r.descripcion }}</td>
+                    <td>
+                        <span class="estado-{{ r.estado }}">
+                            {{ r.estado.title() }}
+                        </span>
+                        {% if r.fecha_resolucion %}
+                            <br><small>{{ r.fecha_resolucion.strftime("%Y-%m-%d %H:%M") }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.estado == 'pendiente' %}
+                            <form method="POST" action="{{ url_for('aceptar_reclamo', reclamo_id=r.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-aceptar" onclick="return confirm('¿Estás seguro de que quieres aceptar este reclamo?')">
+                                    ✓ Aceptar
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('rechazar_reclamo', reclamo_id=r.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-rechazar" onclick="return confirm('¿Estás seguro de que quieres rechazar este reclamo?')">
+                                    ✗ Rechazar
+                                </button>
+                            </form>
+                        {% else %}
+                            <small>Resuelto</small>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

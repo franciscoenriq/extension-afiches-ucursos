@@ -9,7 +9,7 @@
   ],
   "host_permissions": [
     "https://www.u-cursos.cl/*",
-    "http://localhost:5000/api/afiches"
+    "http://localhost:5000/*"
   ],
   "content_scripts": [
     {
